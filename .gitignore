@@ -1,0 +1,27 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Temp
+*.tmp
+*.bak
+
+# PowerShell
+*.ps1xml
+
+# Archive
+*.zip
+*.7z
+
+# VM related (large files)
+*.vhd
+*.vhdx
+*.vmdk
+*.iso
