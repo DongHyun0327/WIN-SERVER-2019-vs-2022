@@ -1,359 +1,397 @@
-# Windows Server 2022 설치 실습 정리
+# Windows Server 2019 Study Week 1
 
-> 이미지가 잘리지 않도록 모든 스크린샷은 HTML `<img>` 태그로 삽입했고, `max-width:100%; height:auto;` 옵션을 적용했습니다.
+> Windows Server 2019 설치, Desktop Mode/Core Mode 비교, 초기 보안 설정 실습 정리 문서입니다.
+>
+> 이미지가 많은 문서라 이미지가 잘리지 않도록 모든 이미지는 `max-width:100%; height:auto;` 속성을 적용했습니다.
 
----
+## Windows Server 2019 설치 및 초기 보안설정
 
-비밀이지만 공개해보겠습니다… 초안1..
+**서버 Mode별 설치 과정 및 초기 보안설정은 아래 토글을 눌러서 확인하시면 좋습니다.**
 
-스터디 정식 보고서를 쓰기 전 여러분에게 윈도우 서버 설치를 소개하고자 ~ 이렇게 찾아왔습니다...
+## VMware에 Windows Server 2019 설치
+### 가상머신 생성
 
-잘 알려드리고 싶지만 저는 '비'전공자라 부족한 점이 많습니다.
+먼저 마이크로소프트 홈페이지에서 ISO파일을 다운로드 합니다.
+[Windows Server 2019 ISO 다운로드](https://www.microsoft.com/ko-kr/evalcenter/download-windows-server-2019)
+<p align="center"><img src="attachment:f4319db5-0231-4417-978f-870c583101a6:스크린샷_2026-04-26_125807.png" alt="스크린샷 2026-04-26 125807.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-정정하고 싶은 내용이 있다면 댓글로 알려주시거나 직접 찾아와서 알려주시면 감사하겠습니다~!
+Typical 유형을 선택합니다.
 
-함께 성장해요 ! ! 함성 !!!!!!!!!!
+<p align="center"><img src="attachment:e3e1bf81-2722-4796-958d-b2d6cb5aaf36:스크린샷_2026-04-26_130518.png" alt="스크린샷 2026-04-26 130518.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://storep-phinf.pstatic.net/ogq_5eedbcd06ab59/original_10.png?type=p100_100" alt="ogq_5eedbcd06ab59-10" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+ISO 파일이 다운로드가 완료되었을 경우 자신 있으시면 , disc이미지에 넣어서 바로 설치해도 됩니다. ISO 파일이 아직 다운중이시라면, 먼저 가상머신을 생성한 후에 ISO 이미지를 설치해도 됩니다. 저희는 실습 환경을 위해서 ISO파일을 나중에 설치하기로 합니다.
 
-안녕하세요. 윈도우 스터디를 시작했습니다.
+<p align="center"><img src="attachment:a90e2998-fe06-4018-a20c-87415ad84dae:스크린샷_2026-04-29_140025.png" alt="스크린샷 2026-04-29 140025.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-정신 차리고 보니 내가 윈도우 마스터?가 될 수 있을까 기대가 됩니다.^^
+저희가 설치할 운영체제는 Windows Server 2019이기 때문에, 2019 버전을 찾아 선택합니다.
 
-저(안지명)와 송규석군은 서버 2022 하주한님과 김동현님은 서버 2019를 담당해서 각각의 서버가 어떻게 다른지 특징을 살펴볼 예정입니다.
+<p align="center"><img src="attachment:bec7284b-7735-4a9f-bff5-cdd3b4fe405f:스크린샷_2026-04-26_130548.png" alt="스크린샷 2026-04-26 130548.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-오늘은 1주차 !
+디스크의 최대 용량은 시스템에서 추천해주는대로 60GB로 설정합니다. 용량이 부족할 경우 설치 단계 혹은 설치 후에도 많은(?) 문제가 발생할 수 있습니다.
 
-윈도우 서버 2022 설치부터 해보겠습니다.
+그리고 설치 후 가상 디스크를 분할할 것인지 단일 디스크로 사용할 것인지를 물어봅니다.
 
-데스크탑 환경과 CLI 환경 두 가지로 진행했습니다.
+둘의 차이점은 많은 분들이 이미 아실 겁니다.
 
-아래 사진들을 따라와주시면 되겠습니당.
+- Single file : Windows Server 2019(최대 60GB)를 메인PC에 하나의 단일 파일로 저장
 
-그럼 시작해보겠습니다!
+    ⇒ 파일 개수가 적어 관리가 단순함
 
-<p align="center">
-  <img src="https://storep-phinf.pstatic.net/ogq_5ebebeedf0c9a/original_1.png?type=p100_100" alt="ogq_5ebebeedf0c9a-1" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+- Multiple file : 메인 PC에 여러개의 파일로 분할해서 저장
 
-먼저 iso파일이 필요한데요..
+    ⇒ 성능, 기능에 큰 차이는 없으나, 백업, 이동, 압축 등이 자주 일어난다면 multiple file로 저장하는것이 유리
 
-[Windows Server 2022 ISO 다운로드](https://www.microsoft.com/ko-kr/evalcenter/download-windows-server-2022)
+저희 환경에서는 split을 선택, 설치하는것이 좋습니다. 저희는 현업자 마인드를 탑재해야 하니까.
 
-**Windows Server 2022 | Microsoft Evaluation Center**
+<p align="center"><img src="attachment:ca942e9c-a27e-4b60-a3ae-c914f0ab1728:스크린샷_2026-04-26_130706.png" alt="스크린샷 2026-04-26 130706.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-Windows Server 2022는 고급 다중 레이어 보안, Azure와 함께 하이브리드 기능, 유연한 응용 프로그램 플랫폼을 도입합니다.
+최종적으로 설정을 확인한 후에 완료(Finish) 버튼을 누릅니다.
 
-www.microsoft.com
+<p align="center"><img src="attachment:3d24aa1b-31f5-4e0c-b10e-b4207f04c1cd:스크린샷_2026-04-26_130712.png" alt="스크린샷 2026-04-26 130712.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-이곳에 들어가면 ISO를 다운받을 수 있습니다.
+설치가 끝난 후에는 창 왼쪽의 CD/DVD(SATA)를 클릭해 아까 설치하지 않은 ISO 파일을 설치하도록 합니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfNjcg/MDAxNzc3MjU2MzkzNzMx.zl-tP1vNkRCFA3UEoDAgk0b4J_LAjXmzHWExjJ3OzOUg.SPVsN2spAFSd5Qh4kSRqqmS2eCY7UnsQZnBg2jN0J-gg.PNG/iso%EB%8B%A4%EC%9A%B4.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:9f60ed36-d485-4e58-a055-d93d43e2225a:스크린샷_2026-04-29_135916.png" alt="스크린샷 2026-04-29 135916.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+오른쪽 하단에 보이는 use ISO image file 에서 browse을 눌러 ISO 파일을 선택해서 설치합니다.
 
-iso 설치파일 다운로드하세요~
+<p align="center"><img src="attachment:a5331698-cc94-45a0-a46d-72567acadc9d:스크린샷_2026-04-26_130847.png" alt="스크린샷 2026-04-26 130847.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTQ2/MDAxNzc3MjU1ODgyODMx.CRvOz_Os1W9ixDya3kb53PsXf8UYAmX4tAJLjUthGGUg.FEYR1UlT6YCJeI7figP9ZSr8F2FRC4EMaSUoyzMLzgsg.PNG/newfil-1.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+ISO image 파일이 정상적이라면, 설치가 진행되며 다음과 같은 설정창이 뜨게 됩니다. 여기서 언어와 시간대, 키보드 입력 방식을 선택합니다. 안타깝게도 최초 설정은 영어밖에 안됩니다. 이부분은 설치가 완료된 이후 설정 창에서 변경이 가능하니 너무 아쉬워하지 마세요.
 
+<p align="center"><img src="attachment:32fc1052-a86a-4689-8825-fddc6588a34d:스크린샷_2026-04-26_131154.png" alt="스크린샷 2026-04-26 131154.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-새로운 VM을 생성합니다.
+그것보다 중요한것이 시간대와 키보드 입력방식입니다. 저희는 한국에 있고 한국 키보드를 사용하니 그에 맞게 설정해줍니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjg1/MDAxNzc3MjU1ODg5NTE1.0T0bvQeW0oAEjN9JR0Lx3QczzLzQ5NLTaWtyKHJelmgg.D22qUR9Kuyf0l2MQv55dSDfJxYb29KjiCShizc7L83og.PNG/%EC%84%A4%EC%B9%98%EC%8B%9C%EC%9E%91-2.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:b424af23-bd89-48b6-836b-c4eab44233e8:스크린샷_2026-04-26_131650.png" alt="스크린샷 2026-04-26 131650.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+마지막 항목인 키보드 유형에는 4가지 유형이 있는데 선택하기를 힘들어하시는 분들을 위해 간단하게 설명드리자면, 키보드 배열에 따라 다른 유형을 뜻합니다.
 
-지금은 추천하는대로 진행합니다.
+저의 친구 Chat-Gpt에게 물어보니, 유형별로 다음과 같은 차이점이 있습니다. 현재 저희의 실습 상황에는 Type1이 적합합니다. 다른 분들은 각자의 환경에 맞는 키보드 유형을 선택하시면 될 것 같습니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTky/MDAxNzc3MjU1ODkzMjQ3.pQZSW80vNNcdDkwIRgzK2SLlJcKpRaqzYUw88fThdxIg.kjwkpN-PtHR-U8RJHCO8tMmYXEhL12xzx_ICeSXyHqQg.PNG/%EB%82%98%EC%A4%91%EC%97%90%EC%84%A4%EC%B9%98-3.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:6631cb4c-8b53-4325-9272-9471d2b03283:image.png" alt="image.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+키보드 선택이 끝나면 기본 설정이 끝나고 선택한 설정에 맞게 바로 설치가 가능합니다.
 
-OS는 나중에 설치하시면 됩니다.
+<p align="center"><img src="attachment:092ddd5c-ba3c-4c32-9836-a23ee58ce1aa:스크린샷_2026-04-26_131700.png" alt="스크린샷 2026-04-26 131700.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTk2/MDAxNzc3MjU1ODk4MTIw.UY8Pbft2c6s-LWQrCWsH_MOhL2qWQYnDf7jI7qJPslAg.ndJsce2ft2DtcNtFsVbNrUvRyziP2yGK05brIhGTnrwg.PNG/%EB%A7%88%EC%86%8C%EC%84%A0%ED%83%9D-4.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+## Windows Server 2019 (Desktop Mode)
+### Windows Server 2019 Desktop Mode 설치
 
+갑자기 4개의 선택지가 주어집니다. 읽어보시면 Standard 버전 2개, Datacenter 버전 2개가 있습니다. 저희는 일반 환경이니 Standard로 선택을 해야할 것만 같습니다.(설마 Datacenter겠어?)
 
-Microsoft Windows를 선택하고, Windows Server 2022를 골라주세요.
+Standard 버전 2개의 차이는 하나는 Core Mode, Desktop Mode 입니다. 일단은 저희에게 친숙한  Desktop 환경을 선택해서 설치해봅니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjI0/MDAxNzc3MjU1OTA0MDI2.9dLffTEVA9tYG_jcDWASlstD-hRfgiblT8jsHhFc5Aog.e3n-VTj4dCrYX7tZuuYPQPtqUJ-Af_znY249OLWJEWEg.PNG/%EB%A9%80%ED%8B%B0%ED%94%8C%ED%8C%8C%EC%9D%BC%EC%84%A0%ED%83%9D-5.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:0974ca04-b565-45e8-a2df-c094c3ea8d28:스크린샷_2026-04-26_131816.png" alt="스크린샷 2026-04-26 131816.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+<p align="center"><img src="attachment:91dedf98-f62c-4ebb-9987-7108bb0c84fc:스크린샷_2026-04-26_131823.png" alt="스크린샷 2026-04-26 131823.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-지금은 디스크를 분할하는 선택지를 택했습니다.
+이용약관 및 주의사항, 라이선스 조건 은 안읽고(X), 꼼꼼히 읽고(O) 다음으로 넘어갑니다.
 
-저희는 여기서 두 선택지의 차이가 궁금했습니다.
+<p align="center"><img src="attachment:bb7f315b-07df-47ff-9ed0-1018f684509c:스크린샷_2026-04-26_132424.png" alt="스크린샷 2026-04-26 132424.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-먼저 **단일 파일 (Single File)은**
+또 다시 선택지가 주어집니다. Custom 버전으로 설치합니다. 왜냐하면 Upgrade는 선택해도 안됩니다. 저희는 기존에 설치한 Windows Server 버전이 없기 때문입니다.
 
-하나의 거대한 덩어리로 존재할 때 데이터의 연속성이 확보되어 읽기/쓰기 효율이 극대화됩니다. 성능과 안정성을 중시할 때 선택합니다.
+<p align="center"><img src="attachment:7cb6c61a-18e4-4179-b61f-15a0cdcf5171:스크린샷_2026-04-26_132537.png" alt="스크린샷 2026-04-26 132537.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-**분할 파일 (Split Files)은**
+<p align="center"><img src="attachment:64014d5a-9027-46fd-9083-ea49fc1b6ffc:스크린샷_2026-04-26_132834.png" alt="스크린샷 2026-04-26 132834.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-실험적인 환경이나 개발 서버를 관리하는 엔지니어에게 유리합니다. 백업과 유연성을 중요시할 때 선택합니다.
+<p align="center"><img src="attachment:4a6f5595-7c4f-4198-a3b8-dc998f53d8f0:스크린샷_2026-04-26_132659.png" alt="스크린샷 2026-04-26 132659.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTY5/MDAxNzc3MjgwOTE0Nzc1.yYCNuW7ar-Dw7tGzQmbDLtPnaJok57QShz-rvk0PEUMg.lM18p2YuNjBU3Rb3hUo1yrZ2dcJ_zZKwY_mwvNav26Ag.PNG/image.png?type=w1600" alt="image.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+만약에 기존에 설치된 파일, 파티션으로 나뉘어진 디스크가 있다면 여기 표시됩니다. 첫 설치이기 때문에 넘어가면 됩니다.
 
+<p align="center"><img src="attachment:d9eaf4a8-9889-4615-a4d6-5e229fe0ed2e:스크린샷_2026-04-26_132816.png" alt="스크린샷 2026-04-26 132816.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-표시된 부분을 클릭합니다
+기나긴 선택 화면들이 끝나고 드디어 설치에 들어갑니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjgy/MDAxNzc3MjU1OTExMzg4.mHhwlzEskXsnyllS0GS2UfCLYGjz5vu36QUZvKMWMJIg.s8ICQ-UyJn9vA6qyVdr3FCJX_YTJXEwx3Sez0Sq-RqUg.PNG/iso%EC%84%A4%EC%A0%95-6.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:8f645869-e204-4b26-a603-c647ecbadd44:스크린샷_2026-04-26_132917.png" alt="스크린샷 2026-04-26 132917.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+이제 본격적인 시작입니다. 생성 후 새 암호를 설정합니다. 우리는 현업자이기 때문에 쉬운비밀번호는 지양해야합니다.
 
-세팅창이 나타나면 CD/DVD (SATA)를 클릭하고 표시된 부분에 직전에 받은 ISO파일을 넣어줍니다.
+<p align="center"><img src="attachment:0787a471-a412-45f8-a3c9-fee54b5d5b07:스크린샷_2026-04-26_133220.png" alt="스크린샷 2026-04-26 133220.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-그 후에 OK와 finish를 눌러주고, VM실행을 눌러줍니다.
+<p align="center"><img src="attachment:cf27ff64-b2b1-48cf-9886-a41a5fdc68cf:스크린샷_2026-04-26_133250.png" alt="스크린샷 2026-04-26 133250.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjUy/MDAxNzc3MjU1OTIxNDgy.bjtO_X5k_BAar7RKy0Bp6BjpVjFqKkVT7TI7beN9t30g.3WZrYSmSm6w2SCRIWQkYfpaBR7aUDJM3GF8fDBNgapIg.PNG/korean-7.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+성공적으로 로그인했습니다. 이제 남은 과제들이 있습니다.
 
+<p align="center"><img src="attachment:733842d2-b40f-4641-9a0d-162467951bb3:스크린샷_2026-04-26_133311.png" alt="스크린샷 2026-04-26 133311.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-짜란
+보안 업데이트, 이름변경, 시간동기화 등등이 있습니다. 그전에 현업자들은 Language를 English로 setting 해서 use하지만 저희는 practice가 purpose다 보니 한국어로 변경해보겠습니다.
 
-Time and currency format을 Korean(Korea)으로 선택합니다.
+설정 창으로 들어가 lauguage로 들어가 빠르게 korean을 찾아 다운로드합니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjUx/MDAxNzc3MjU1OTI0NTQy.J19KIDvhxaY_GmB43uAH5DNl0xJK6nPK2Wjdy7cAHTUg.bGicn28w_7F_hcOmNCQSnKDrPegrsxDg8E0Wim99f4Yg.PNG/installnow-8.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:e1f1d8f2-9cbb-44d6-bf23-0dbb9c7d3060:스크린샷_2026-04-26_133443.png" alt="스크린샷 2026-04-26 133443.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+<p align="center"><img src="attachment:e4dbc8d2-a54a-49f1-8961-52e58729decf:스크린샷_2026-04-29_145909.png" alt="스크린샷 2026-04-29 145909.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-Install now click plz^^
+<p align="center"><img src="attachment:60cc14d6-7691-4675-a3ed-1dbe05587a29:다운로드.jpg" alt="다운로드.jpg" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjQ5/MDAxNzc3MjU1OTMwNzMx.cKAEf9hZGQE7cDHBH_3aLvPD-TyavqfEbILHjwGLuKog.t0anrRy-n29Z32nCe7RhMAmA9MjuTASTxn1I4bllrmYg.PNG/desktop%ED%99%98%EA%B2%BD%EC%84%A4%EC%A0%95-9.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+남은 과제들은 다음 항목에서 진행해보겠습니다.
 
+### Windows Server 2019 Desktop Mode 초기 보안설정
 
-두 번째인 Desktop Experience 를 선택해줍니다.
+설정창으로 이동해 Windows 업데이트로 들어갑니다. 업데이트 파일을 다운 받아 보안성을 강화해줍니다. 업데이트 설치가 끝났다고 해도, 한번 더 확인해서 더 이상 가능한 업데이트가 없을 때 까지 확인해줍니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfOCAg/MDAxNzc3MjgxMjMxODk5.dwO6GH1WGPGSur9EK6nE119n3bgwtY2IJPTTSITC-jkg.pFdEvUjOD8MIgePoLkHP7BQnyEqOZOk9DiNuEQ_0mzEg.PNG/SE-871345b7-a09b-4a66-9499-18a5efdad5a8.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:a83c3315-5526-47e8-8735-2a971782af89:스크린샷_2026-04-26_143219.png" alt="스크린샷 2026-04-26 143219.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+<p align="center"><img src="attachment:d5c50651-dc7c-457d-970a-23aaf29f8930:스크린샷_2026-04-26_144641.png" alt="스크린샷 2026-04-26 144641.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-화살표 체크박스를 클릭해주세요. 그래야 넘어갑니다.~
+업데이트가 완료되었습니다. 두 번 정도 업데이트하니 업데이트가 완료되었습니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTgz/MDAxNzc3MjU1OTQwNjkz.DGrZNtuYu0Cbdi_5Xhw5Jm4oqSu6ggZbq3sjInbbnNkg.8_PMX6-XNnetZoEmElfYDnq0_PuaaT7_2ZWeFg9-mlAg.PNG/%EC%BB%A4%EC%8A%A4%ED%85%80%EB%AA%A8%EB%93%9C_%EC%84%A4%EC%A0%95-11.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:e243143d-12c5-456b-968b-218f573bb15b:스크린샷_2026-04-26_145831.png" alt="스크린샷 2026-04-26 145831.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+그 후에는 사용자 이름을 변경해줍니다.
 
-Custom을 선택해줍니다....
+<p align="center"><img src="attachment:da53b47b-8857-4cc7-acc5-879993367a01:스크린샷_2026-04-26_150039.png" alt="스크린샷 2026-04-26 150039.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjY1/MDAxNzc3MjU1OTQyODQz.xn0FYwG94GBCL5JfBPVtDcA85pRLhoeOEwTqsv0j4A4g.cE7dYyfvx_g67jW7PD4HIMsNWIz0PcZHS5F1yxS5ZpAg.PNG/custom%EC%84%A4%EB%AA%85-11-1.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+저희는 Windows Server 2019 스터디라는 의미로 아래와 같이 이름을 변경했습니다.
 
+<p align="center"><img src="attachment:4d7d5349-529d-4077-97c4-8a5ef38918f8:스크린샷_2026-04-26_150111.png" alt="스크린샷 2026-04-26 150111.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-두 타입의 차이점은 위와 같습니다..
+이제 시간대를 설정합니다. 표준 시간대로 들어가서 (UTC +09:00 서울) 항목을 눌러 시간대가 맞는지 확인합니다.
 
-Upgrade타입은 데이터를 보존하며 버전만 올리는 설정입니다. 따라서 기존에 OS설치가 돼있지 않다면 진행되지 않는데,  저희는 OS설치가 되어있지 않은 환경이므로 Custom으로 진행하였습니다.
+<p align="center"><img src="attachment:f17c9c63-96ee-42a2-8013-ad7975384a46:스크린샷_2026-04-26_150443.png" alt="스크린샷 2026-04-26 150443.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjE1/MDAxNzc3MjU1OTQ1OTE4.mljQ_VXf8gClUTh3lg9hK0tpKTjHt93NA_pAYTnmToIg.RZyw8Pnv8aOBHGKsfiWU5WaIA9ko_LBGFgyzEtfVjL0g.PNG/os%EC%84%A4%EC%B9%98%EC%9C%84%EC%B9%98-12.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:b8e576ab-fb3e-45de-a1e2-34ab6c0037fa:스크린샷_2026-04-26_150458.png" alt="스크린샷 2026-04-26 150458.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+이제 네트워크 연결이 정상적으로 되어 있는지 확인해볼 차례입니다.
 
-next를 눌러줍니다.
+ipconfig를 입력해 ip주소를 확인하고, 우리의 Google public domain(8.8.8.8)에 ping을 보내봅니다. 이상없이 잘 작동합니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfODgg/MDAxNzc3MjU1OTQ3OTgz.eYp32OI2O4n5aoDV7wgg1Nr_DrnpdfMscEwFnXvGDUEg.9ZcnH1cc-SvBK24yfVIvAUuTLeoUzcYHOGHz4ofAmN4g.PNG/os%EC%84%A4%EC%B9%98%EC%A4%91-13.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:c8b075d1-7389-4927-947b-0b0c0c1de764:스크린샷_2026-04-26_153314.png" alt="스크린샷 2026-04-26 153314.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+<p align="center"><img src="attachment:65a09472-8c45-49db-8147-f9002b68ac81:스크린샷_2026-04-26_153432.png" alt="스크린샷 2026-04-26 153432.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-그럼 설치중 ~~
+다음으로는 불필요한 서비스 비활성화가 남았습니다. 우리의 친구 Chat-Gpt에게 불필요한 활성화 서비스 목록을 확인하는 방법을 물어봅니다. 친절하게 명령어를 알려줍니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfODIg/MDAxNzc3MjU1OTU0NTAx.VinWYIvYgwb2s4c-cdDP4CO0e9qDD5-WN715O9PeyxUg.QXg0qpVsmVIjRNRtozBisSLI6tYqcUBJ-sP3SEZcCW4g.PNG/%EC%95%8C%EC%95%84%EC%84%9Crestart-14.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+> 💡
 
+명령어
 
-restart 중
+*현재상태 저장
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfNDAg/MDAxNzc3MjU1OTU5ODEx.HN2yRLxkkA3yePZDXi47pBh064xf8zDCNJSoY5pj6IQg.wvL6VWlC8vxLmWGWbBxGa0XA6cMm3DwG23ouMt7CdXQg.PNG/password%EC%84%A4%EC%A0%95-15.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+`mkdir C:\Audit`
 
+*서비스 전체목록 저장
 
-비밀번호는 비밀입니다.
+`wmic service get Name,DisplayName,State,StartMode > C:\Audit\desktop_services_all_before.txt`
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTE4/MDAxNzc3MjQ5MTk4OTYy.Jy0LlZSoPHW0BRynT4lkN5ktei7M3nxl4VaBLlbf8Icg.3YX01c5SQsug_fD1xmPYhZw-oY89IkXyabF1ZLnWHFYg.PNG/%EC%9C%88%EB%8F%84%EC%9A%B02022%EC%84%9C%EB%B2%84%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C-1.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+*자동시작 서비스 저장
 
+`wmic service where "StartMode='Auto'" get Name,DisplayName,State,StartMode > C:\Audit\desktop_services_auto_before.txt`
 
-설치 후 첫 화면 'Dashboard'
+*cmd 화면에 목록 출력
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjE2/MDAxNzc3MjQ5NDM4OTc3.TyUrqssmzMjL_04JCIfCY3JZMdCXDgqn2dm9akQ727Ag.GibuMFrrRk179uSCb4B_Ln2bN06aRVLE9izvsyq0Tg0g.PNG/SE-7b234c63-1de0-47ed-8573-7b5a128a8906.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+`wmic service where "StartMode='Auto'" get Name,DisplayName,State,StartMode`
 
+아래와 같이 목록이 출력됩니다. 목록 중에 굳이 필요없는 서비스들이 보입니다.
 
-언어 설정
+<p align="center"><img src="attachment:54ff3134-8ab9-43f9-b003-1690f97a6e32:스크린샷_2026-04-29_164652.png" alt="스크린샷 2026-04-29 164652.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjYz/MDAxNzc3MjQ5NDkwMzAy.K7QQkQBFCFrJ-24L6tNy9oM2BiovlTzz6ato1HSBMmog.eeSEJTwMyjZKpHG7RYU22cCw1qlf3nky8VJHQQ8Q9isg.PNG/SE-1fd478e9-4628-4ca7-935a-11030bfc4bcb.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:8bbf9ada-f660-4748-8bac-b61a7fe62196:스크린샷_2026-04-29_164704.png" alt="스크린샷 2026-04-29 164704.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+PrintSpooler = 프린트 사용 시, 프린트 드라이버를 확인하고 다운로드 받는 프로그램입니다. 현재 프린트를 사용할 계획이 없기 때문에 비활성화해도 될 것 같습니다.
 
-Korean의 Options선택
+MapsBroker = Downloaded Maps Manager로 오프라인 지도 앱의 데이터 접근을 관리하는 서비스입니다. 서버에서 지도를 사용할 일이 없을 것 같으니 비활성화해도 될 것 같습니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMzAw/MDAxNzc3MjQ5MjI1OTc1.toT2jsc_SpQLkO1PMfFZA-l3ghlsNJaDiE5r3nBTckUg.3UZ3g6WK_QWdaNffg5g-TfP4r9EEEfoCC_CzC7sHIcwg.PNG/%EC%A0%84%EB%B6%80%EB%8B%A4%EB%B0%9B%EC%95%84%EC%A3%BC%EC%84%B8%EC%9A%94-4.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+> 💡
 
+비활성화 명령어
 
-전부 다 download눌러주세요
+*MapsBroker 비활성화
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjc0/MDAxNzc3MjQ5MjMwMDAx.mLVzxqN9KJkQ9V_W8CGrRCtueKTARDXYAhbTL_pUe_Yg.PtDenEeHaOOLfueUPGnUkBPy3waI5Iw1rGEYmVApajkg.PNG/%EB%8B%A4%EC%9A%B4%EC%99%84%EB%A3%8C-5.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+`sc config mapsbroker start= disabled`
 
+*PrintSpooler
 
-다운로드 완료!
+`sc config spooler start= disabled`
 
-**Basic Typing이 다운로드 할 때는 있었는데 다운로드 후엔 사라졌습니다. 그게 뭘까요?**
+*비활성화 확인
 
-Basic typing은 윈도우에서 특정 언어를 키보드로 치고 읽는 데 필요한 가장 핵심적인 데이터 파일입니다.
+`sc qc mapsbroker`
 
-**그렇다면 !!!!!!!! 왜 목록에서 사라졌을까요?**
+`sc qc spooler`
 
-윈도우 설정 화면의 특성상, '다운로드 중'일 때는 진행 상황을 보여주기 위해 각각의 구성 요소(기본 입력, 필기, 음성 등)를 개별적으로 나열합니다.
+아래와 같이 불필요한 서비스를 비활성화 했습니다.
 
-하지만 '설치 완료' 후에는 화면을 깔끔하게 정리하기 위해 다음과 같이 합쳐집니다.
+<p align="center"><img src="attachment:0e89cf21-4692-4312-b78a-87b30fae8910:스크린샷_2026-04-29_172348.png" alt="스크린샷 2026-04-29 172348.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-**Language pack installed:** 이 문구 안에 'Basic typing' 기능이 포함됩니다. 한국어를 읽고 쓰는 데 필요한 가장 핵심적인 기능이라 언어팩 설치 시 세트로 묶여서 표시되는 것이죠.
+협업에서는 CMD 보다 Powershell 을 더 많이 사용한다.
 
-**Handwriting installed:** 필기 인식 기능은 별도로 표시되기도 합니다.
+관리자 이름 변경
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTAy/MDAxNzc3MjQ5ODgyNjE0.8EB9QDgQpEnyhChzWigagxok6EwwxRr-2B_4XkiydEEg.O6IP-Ak8VDyEMtYfXv_ltdK8pqdtR5zQan6KGRSHIKQg.PNG/SE-be16216f-df85-47f5-bd8c-8a73a618fd23.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:dd60f128-4dd5-4d46-a56b-b67ed3084dae:image.png" alt="image.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+CMD 와 Powershell 의 차이점
 
-sign out now를 눌러줍니다.
+| 구분 | CMD | PowerShell |
+| --- | --- | --- |
+| 등장 시기 | 오래됨 | 비교적 최신 |
+| 기본 목적 | 명령 실행 | 시스템 관리/자동화 |
+| 데이터 처리 | 텍스트 | 객체 |
+| 자동화 | `.bat`, `.cmd` | `.ps1` |
+| 명령어 형태 | 짧은 명령어 | 동사-명사 구조 |
+| 서버 관리 | 제한적 | 강력함 |
+| 학습 난이도 | 쉬움 | 처음엔 조금 어려움 |
+| 실무 중요도 | 기본기 | 필수에 가까움 |
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTg1/MDAxNzc3MjQ5MjU3Nzc1.FuqfSdWH8CKqwxVAMhw2Cnj1ceCbet8hN8Q7OfnDJccg.iGZSmsFXMdN8QGLi5QP7QaXNQCTg5NsXQH-p3ncjjGkg.PNG/%ED%99%94%EB%A9%B4%EC%84%A4%EC%A0%95%ED%95%98%EB%8A%94%EB%B2%95-8.png?type=w1600" alt="image" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+GUI환경에서는 `services.msc` 을 통해 확인할 수 있습니다.
 
+<p align="center"><img src="attachment:4261b285-5505-4a83-a58d-c9c0ee64f7fa:스크린샷_2026-04-29_174330.png" alt="스크린샷 2026-04-29 174330.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-위 사진들과 다른 점은 .. 사이드 검은 공간이 사라졌습니다.
+입력 후에는 더블클릭해서 시작 유형을 선택할 수 있습니다.
 
-다음 차례는 주차별 상세 커리큘럼.. 에서 sconfig(코어모드)를 실행해보겠습니다.
+<p align="center"><img src="attachment:f5d25155-eadf-416e-a590-5b20a7b8f52b:스크린샷_2026-04-29_174801.png" alt="스크린샷 2026-04-29 174801.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-**sconfig**는 'Server Configuration'의 약자로,
+여기까지 Windows Server 2019 Study 1주차 - Desktop Mode 설치 및 초기 보안설정
 
-윈도우 서버 특히 GUI가 에서 복잡한 명령어 대신 **번호 선택 방식**으로 서버의 핵심 설정을 할 수 있게 도와주는 **텍스트 기반 설정 도구**입니다.
+에 대해 진행해보았습니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfNSAg/MDAxNzc3MjgzMjMyNDM1.z8SuLcvuFWFwFWloiK0mNb7g7SWtHrxjjRZ72z7ODCYg.glGnozFEgJ_GPalBmxs-1cUI28ofzGQBuATjYWoJ3aUg.PNG/sconfig%EC%9E%85%EB%A0%A5-1.png?type=w1600" alt="sconfig입력-1.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+## Windows Server 2019 (Core Mode)
+### Windows Server 2019 Core 설치
 
+Windows Server 2019(Core Mode)를 설치해봅니다. Core Mode는 CMD환경에서 실습이 진행됩니다.
 
-이제 1주차에 해야 할 일 'sconfig'를 터미널 켜서 타닥타닥,,,,
+<p align="center"><img src="attachment:0e32ab82-fd53-4ce6-bb2a-fa1c835f25f7:스크린샷_2026-04-26_140242.png" alt="스크린샷 2026-04-26 140242.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjY5/MDAxNzc3MjgzMjc2Njc5.TGWSt0la1qdveoshSixQpnotxmDBmLwjsxMGcqZT-8Eg.9vq76frUQMrOBmJI4ylhQ-FImcjYnl97kgk57IpSCSAg.PNG/%EC%BD%94%EC%96%B4%EB%AA%A8%EB%93%9C-2.png?type=w1600" alt="코어모드-2.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+### Windows Server 2019 Core Mode 초기 설정
 
+설치가 완료되면 Core Mode에서는 아래와 같이 CMD창이 뜨게 됩니다. 초기에 새로운 비밀번호를 입력해서 비밀번호를 설정해줍니다. Desktop Mode와 같이 복잡한 비밀번호를 설정해줍니다. 저희는 역시 현업자 마인드를 탑재해야하니까.
 
-여기선 해당하는 번호를 입력해 설정값을 변경할 수 있습니다.
+<p align="center"><img src="attachment:e57da9b8-8fd3-4cb7-a12c-1bc86784af23:스크린샷_2026-04-26_140524.png" alt="스크린샷 2026-04-26 140524.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTc2/MDAxNzc3MjgzMzA5Nzk1.y6F_FEtj-fY2V31nNP4HB99iln9ebweVRipcDhC7wF8g.jsNXcHEDXsLsgFcrtZpK3FiDuRgCjcIyncrDGNdbz-og.PNG/2%EB%B2%88_%EC%BB%B4%ED%93%A8%ED%84%B0%EC%9D%B4%EB%A6%84_%EC%84%A4_%EC%A0%95-4.png?type=w1600" alt="2번_컴퓨터이름_설_정-4.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:0806462c-6cc8-4bb5-bd71-8173c40d34c0:스크린샷_2026-04-26_141905.png" alt="스크린샷 2026-04-26 141905.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+<p align="center"><img src="attachment:36294bad-a627-4d98-8f64-fc7457c24d66:스크린샷_2026-04-26_141920.png" alt="스크린샷 2026-04-26 141920.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-다음은 Computer name설정을 위해 2번을 눌러보겠습니다.
+초기 보안 설정은 CMD 창에서 sconfig를 입력해 설정화면으로 들어갑니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfNjQg/MDAxNzc3MjgzMzE0OTA0.Avta2Zqc6h7v2vr2uJzhqmllJJ-85-5vSddmOE3y5Ygg.D9-vHjli2koCGUaYK5ZT1h7QSo7xEzg59txjik_VMsMg.PNG/%EC%BB%B4%ED%93%A8%ED%84%B0%EC%9D%B4%EB%A6%84_%EC%84%A4%EC%A0%95_-5.png?type=w1600" alt="컴퓨터이름_설정_-5.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:5ac9d5f8-e52f-4ccf-ac0a-fbf27224c9f1:스크린샷_2026-04-29_153608.png" alt="스크린샷 2026-04-29 153608.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+뭔가 잘못된것만 같은 블루스크린의 Sever Configuration 화면이 뜹니다. 저희가 변경해야할 부분들입니다. 먼저 업데이트부터 확인해줍니다.
 
-이름을 지정해주고나니
+<p align="center"><img src="attachment:ce170414-0e06-49b0-82e0-07f4e3c2c754:스크린샷_2026-04-26_142133.png" alt="스크린샷 2026-04-26 142133.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTM4/MDAxNzc3MjgzMzE5MzM0.wOmJ5veu3kOGgreoG8XIuc0tEFU8l9c6MzN3aj2gOIwg.Hq2JUQ5X_r7hEVuN-vxmvRGk3NHzYkdWA-cbfA9vcxcg.PNG/%EC%9D%B4%EB%A6%84%EC%84%A4%EC%A0%95%EC%99%84%EB%A3%8C_-6.png?type=w1600" alt="이름설정완료_-6.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+5번을 눌러 업데이트를 자동으로 할지, 다운로드만 할지, 수동으로 할지를 선택합니다. 업데이트를 저는 수동으로 선택했습니다.
 
+<p align="center"><img src="attachment:8eb817d8-8b6b-4943-9376-51406c1a667a:스크린샷_2026-04-26_144030.png" alt="스크린샷 2026-04-26 144030.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-대문자로 변경된다는 것을 알게 되었습니다.
+6번을 누르게 되면, 업데이트를 다운로드하고, 설치를 할 수 있습니다. 설치 가능한 업데이트가 있는지 검색하고, 아래와 같이 설치할 업데이트 목록이 뜨게 됩니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjEw/MDAxNzc3MjgzMzIzNjgx.YiC9Akf_8AtxMgqCoU-r6F3t1lAcqdQiDIFcBSlp2DMg.vmBwoC4cY1d7A89JIJHGaqZKgsk9wmaGyfu4ycf6WBwg.PNG/9%EB%B2%88_%EB%82%A0%EC%A7%9C_%EB%B0%8F_%EC%8B%9C%EA%B0%84_%EB%B3%80%EA%B2%BD_-7.png?type=w1600" alt="9번_날짜_및_시간_변경_-7.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:25408495-8993-4e8e-bf31-9ab780b5b3cd:스크린샷_2026-04-26_144132.png" alt="스크린샷 2026-04-26 144132.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+<p align="center"><img src="attachment:c37f22af-9f48-4b4f-8c3a-da3937b4f2b7:스크린샷_2026-04-26_144338.png" alt="스크린샷 2026-04-26 144338.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-다음은 9번을 눌러보겠습니다.
+<p align="center"><img src="attachment:1d4ff6c8-722b-412c-ab92-e384e404f4c3:스크린샷_2026-04-26_144655.png" alt="스크린샷 2026-04-26 144655.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTQ5/MDAxNzc3MjgzMzMwNDg2.XZHqpWCbj-N2Xd1sBKX2A2jwVtx2vprEOM-UJCfSZDQg.zy-axr03JFQIaP4m8zqJ9Tde42qyVTeg7XVp9beheQYg.PNG/%EC%8B%9C%EA%B0%84_%EB%B0%8F_%EB%82%A0%EC%A7%9C_%EB%B3%80%EA%B2%BD_%EC%99%84%EB%A3%8C_-8.png?type=w1600" alt="시간_및_날짜_변경_완료_-8.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:35efcef7-56c9-4bc0-8963-530b662be751:스크린샷_2026-04-26_144705.png" alt="스크린샷 2026-04-26 144705.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+<p align="center"><img src="attachment:f29a14ec-2a63-406b-a22c-d8825c22e0e6:스크린샷_2026-04-26_145553.png" alt="스크린샷 2026-04-26 145553.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-바로 날짜 및 시간이 뜹니다. 우리는 한국에서 살고 있으니 표준 시간대를 '서울'로 지정해줍니다.
+이번엔 이름을 변경합니다. 아래에 2번을 눌러 이름을 변경해줍니다. Desktop 모드와 동일하게 Study-Win2019Server로 변경합니다.
 
-CLI는 그럼 어떻게 될까요?
+<p align="center"><img src="attachment:6bb1c157-d9b7-4d4e-998e-b4c203f70916:스크린샷_2026-04-29_161440.png" alt="스크린샷 2026-04-29 161440.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjE5/MDAxNzc3MjgyNTQwMTE3.EJDvmbtt-2WBs1YqIN86gYrgV7D8ttF3QvZSJCxoo_4g.TagMY7opmBbjaJn9KO4FYiEKo1nITigmlWJlzWEZ4Owg.PNG/SE-7acb18cb-2a1f-402d-a4cd-495946ca9cce.png?type=w1600" alt="서버코어_선택_-1.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+변경 시 재부팅을 하면, 아래와 같이 이름이 바뀌어 있습니다.
 
+<p align="center"><img src="attachment:93843f68-c11d-4aa2-9386-fffd755a96c6:스크린샷_2026-04-29_161455.png" alt="스크린샷 2026-04-29 161455.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-CLI를 적용하려면 맨 위를 선택해줍니다.
+<p align="center"><img src="attachment:73482756-b28c-4080-b867-665d87c8eebb:스크린샷_2026-04-26_150319.png" alt="스크린샷 2026-04-26 150319.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjM2/MDAxNzc3MjgzMTE0NjU5.Awnl_-X06I57LdqaF62rIUL-rA4xDb2k9FIuVQ3vtS4g.dd0ysqF8KO16EbbXGORjpD9CCHw0IgDFedF0SluN_Esg.PNG/%EC%84%A4%EC%B9%98_%EC%A4%91-2.png?type=w1600" alt="설치_중-2.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+다음으로는 표준 시간대 설정입니다. 9번을 눌러 시간대를 확인합니다. 이상 없으면, 표준시간대도 설정이 완료되었습니다.
 
+<p align="center"><img src="attachment:5653dd3c-386b-4bbb-a336-b4376c3115a1:스크린샷_2026-04-26_150345.png" alt="스크린샷 2026-04-26 150345.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-설치과정은 똑같습니다.
+다음으로는 네트워크 연결이 정상적으로 되는지 확인해봅니다. 15번을 눌러 CMD창을 나갑니다. ipconfig /all을 눌러 확인해봅니다. 아래와 같이 Hostname과 IPv4주소, Gateway 주소를 확인해봅니다. 이름이 잘변경되어 있습니다.
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTcz/MDAxNzc3MjgzMTI0MzE5.-q4-BRUiPzSw38qq0vSFSv3GdLPZJylvqi22FaJu1Fog.1MH1U6jKOPzL7eEbPdMCKbB_U_9fu_uOFqxvzBQ8TzUg.PNG/%EC%8B%9C%EC%9E%91_-3.png?type=w1600" alt="시작_-3.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+<p align="center"><img src="attachment:c49b53d5-3d6d-4ee6-aa04-c5ca5c9ab87f:스크린샷_2026-04-26_153213.png" alt="스크린샷 2026-04-26 153213.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
+Core Mode에서도 우리의 Google public domain에 ping을 보내봅니다. 이상없이 잘 작동합니다.
 
-로그인 하기 전 비밀번호를 바꾸라는 창이 뜹니다.
+<p align="center"><img src="attachment:992ca8ec-a5db-4bcc-9eeb-2922cf217fcd:스크린샷_2026-04-26_153440.png" alt="스크린샷 2026-04-26 153440.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
 
-그렇다면 왜 .. 뜨는 걸까 ?
+불필요한 서비스 비활성화에는 판단 기준이 필요합니다. 판단 기준은 아래와 같습니다.
 
-지금 사용 중인 윈도우 서버 버전이 **Server Core(서버 코어)** 버전이라서 그렇습니다. 우리가 흔히 쓰는 윈도우처럼 예쁜 바탕화면이나 시작 버튼 대신, 이렇게 검은색 창(CLI)에서 텍스트로만 설정하는 방식입니다.
+1. 서버의 역할과 그에 맞는 서비스 인가?
+2. 기본 설치 서비스인가? 추가 설치된 서비스인가?
+3. 현재 실행 중인가?
+4. 종료 시 원격접속/로그/네트워크/업데이트/보안기능에 피해가 가는가?
+5. 끄기 전 상태 기록했는가?
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjQ2/MDAxNzc3MjgzMTg3ODg1.elU3OZ55IVsEbpqQG2978h2rAefNlVYN8Enj-sXYm4Ig.TXdWyNwRlGtbMwDVViaUFxF52cJxcRX7SBJbVFmQN9sg.PNG/%EC%B4%88%EA%B8%B0_%EB%B9%84%EB%B0%80%EB%B2%88%ED%98%B8_%EC%84%A4%EC%A0%95_-4.png?type=w1600" alt="초기_비밀번호_설정_-4.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+> 💡
 
+**CMD 명령어**
 
-그렇게 비밀번호를 지정해주고
+*기록폴더 생성
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMjUx/MDAxNzc3MjgzMTkxMjg2.42IOESqPYH5K26lBWUu2WyLRSjMzVorH_5Wy0gUdaPIg.aeO4pq41bajMFfAtBjSxdPh9aQ1TeYX4f2jSUzKnZjEg.PNG/%EB%B3%80%EA%B2%BD_%EC%99%84%EB%A3%8C_-5.png?type=w1600" alt="변경_완료_-5.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+**`mkdir C:\Audit`**
 
+*전체 서비스 목록 확인 및 저장 명령어
 
-비밀번호가 변경되었다고 나옵니다.
+**`wmic service get Name,DisplayName,State,StartMode > C:\Audit\services_all_before.txt`**
 
-<p align="center">
-  <img src="https://cafeptthumb-phinf.pstatic.net/MjAyNjA0MjdfMTI4/MDAxNzc3MjgzMjA0MDQ1.TUq_WTH1K5gw9pDT1ld0YgWu-hvIbkvQRRXm3DGVuIog.bb-3nI74EKrDGR8OMADAix9JTQQA_wd99CglkXCCHXUg.PNG/cli_%EC%8B%9C%EC%9E%91%ED%99%94%EB%A9%B4_sconfig_-6.png?type=w1600" alt="cli_시작화면_sconfig_-6.png" style="max-width:100%; width:100%; height:auto; display:block;" />
-</p>
+*자동시작 서비스 확인 명령어
 
+**`wmic service where "StartMode='Auto'" get Name,DisplayName,State,StartMode`**
 
-desktop버전에서는 직접 마우스로 터미널을 클릭한 다음 sconfig를 타이핑했다면 서버코어에선 비밀번호를 입력한 후 바로 화면이 뜨는 걸 알 수 있습니다.
+sc query를 통해 확인한 현재 실행중인 ‘자동시작’ 프로그램
+
+<p align="center"><img src="attachment:2a5d1730-5c3f-47d0-a173-99bb6171afbd:스크린샷_2026-04-28_205540.png" alt="스크린샷 2026-04-28 205540.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
+
+실행중인 전체 프로그램
+
+<p align="center"><img src="attachment:c1056593-1cfa-4363-bdc1-ba0d3a1aff5e:스크린샷_2026-04-28_205445.png" alt="스크린샷 2026-04-28 205445.png" style="max-width:100%; height:auto; display:block; margin: 0 auto;"></p>
+
+*빨간색 : 건드리지 말아야할 프로그램 (→제거 혹은 비활성화 시 서버가 망가질 가능성이 높은 프로그램)
+
+*노란색 : 보안정책 이나 필요성을 확인해야하는 검토 대상 프로그램
+
+⇒ 사실 현재 실행중인 프로그램들은 종료, 비활성화가 거의 필요없는 최소한의 프로그램
+
+검토대상 프로그램 명령어
+
+> 💡
+
+`sc query RemoteRegistry >> C:\Audit\service_review_targets.txt`
+
+`sc query DiagTrack >> C:\Audit\service_review_targets.txt`
+
+`sc query MSDTC >> C:\Audit\service_review_targets.txt`
+
+`sc query SysMain >> C:\Audit\service_review_targets.txt`
+
+`sc query UALSVC >> C:\Audit\service_review_targets.txt`
+
+사실 core 모드에서는 비활성화 할 프로그램이 많지 않습니다. 불필요한 GUI 서비스를 거의 설치하지 않기 때문입니다.
+
+여기까지 Windows Server 2019 Study 1주차 - Core Mode 설치 및 초기 보안설정
+
+에 대해 진행해보았습니다.
+
+요약
+
+- Desktop Mode는 저희가 익숙한 GUI환경입니다.
+- Core Mode는 CMD 환경입니다.
+- Core Mode는 불필요한 프로그램을 거의 설치하지 않고 핵심적인 프로그램들만 설치합니다.
+
+## 서버 엔지니어의 역할
+
+서버 엔지니어의 역할에 대한 정의는 **서버가 안정적으로, 안전하게 운영되도록 하는 사람**입니다.
+
+> 💡
+
+**서버 엔지니어의 역할**
+
+구축 : Windows Server, Linux 설치, 가상머신 생성, 스토리지 구성, 네트워크 설정, 도메인 가입 등
+
+운영 : 계정 관리, 권한 관리, 서비스 상태 및 성능 확인, 로그 확인, 백업 확인, 장애 대응 등
+
+보안 : 불필요 서비스 제거, 방화벽 정책 관리, 관리자 계정/일반 계정 및 패스워드 등 보안 정책, 이벤트 로그 감사, 취약점 조치, 보안 업데이트 적용, 백신/EDR 상태 확인
+
+자동화 : PowerShell 사용, 배치 스크립트 작성, 그룹 정책, 원격 관리 등
+
+## Study 1주차 결과요약
+
+- Windows Server의 Desktop Mode와 Core Mode를 모두 설치해보고, 기본적인 설정을 진행해보았습니다.
+- 각 Mode의 환경에서 보안 설정을 진행해보았고, CMD 환경과 GUI 환경의 차이점을 확인했습니다.
+- 전체 서비스 목록을 확인하고 불필요한 서비스 목록을 확인, 비활성화 단계도 실습 했습니다.
